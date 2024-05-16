@@ -1,58 +1,51 @@
+//https://api.themoviedb.org/3/movie5ee8f27402aa22b8b96429569b263e47
+const API_KEY = "api_key=5ee8f27402aa22b8b96429569b263e47"
+const API_URL = "https://api.themoviedb.org/3"
+const MOVIE_URL = `${API_URL}/movie/popular?${API_KEY}`;
+const SEARCH_URL = `${API_URL}/search/movie?${API_KEY}`;
 
-const task_List = document.querySelector("#task-list ul");
-console.log(task_List);
-task_List.addEventListener('click', (e) => {
-    console.log(e)
-    let className = e.target.className;
-    console.log(className);
-    if (className === "delete"){
-        let li = e.target.parentElement;
-        task_List.removeChild(li);
-    }
-})
+const getMovies = (url)=>{
+    fetch(url)
+        .then((response)=> response.json())
+        .then((data)=> {
+            console.log(data.results);
+            showMovies(data.results);
+        })
+        .catch((error)=>console.log(error));
+}
+getMovies(MOVIE_URL);
+const movieDetails = document.querySelector(".movieContainer");
+console.log(movieDetails)
+const imageUrl = "https://image.tmdb.org/t/p/w500"
+const showMovies = (movies)=> {
+    movieDetails.innerHTML = ''
+    movies.forEach(movie =>{
+        const {title,overview,poster_path, vote_average} = movie;
+        const divTag = document.createElement("div")
+        divTag.classList.add("movieDetails");
+        divTag.innerHTML = `
+                <img src="${imageUrl}${poster_path}" alt=""/>
+                <div class="movieTitle">
+                    <h2>${title}</h2>
+                    <h2>${vote_average}</h2>
+                    <h2>OverView</h2>
+                    <p>
+                        ${overview}
+                    </p>`
 
-const search_task = document.forms["find-task"];
-const listOfTasks = document.querySelectorAll("#task-list li .name")
-console.log(listOfTasks);
-search_task.addEventListener('keyup', (e) => {
-    let inputText = e.target.value.toLowerCase();
-    listOfTasks.forEach(task => {
-        let title = task.textContent.toLowerCase();
-        let isIncludeInputText = title.includes(inputText)
-        let parentNode  = task.parentNode
+        movieDetails.appendChild(divTag);
 
-        if(isIncludeInputText){
-            parentNode.style.display = "block";
-        }else {
-            parentNode.style.display = "none";
-        }
     })
-})
+}
 
-const addTask = document.forms["add-task"];
-console.log(addTask)
-addTask.addEventListener("submit", (e) => {
+const  form = document.querySelector("#search");
+const search = document.querySelector("#searchInput");
+form.addEventListener("keyup", (e) => {
     e.preventDefault();
-    const inputValue = addTask.querySelector("input").value.trim();
-    if(inputValue) {
-        const liTag = document.createElement("li")
-        const checkbox = document.createElement("input");
-        const firstSpan = document.createElement("span");
-        const secondSpan = document.createElement("span");
-
-        checkbox.type = "checkbox";
-        firstSpan.classList = 'name';
-        secondSpan.className = 'delete';
-
-        liTag.appendChild(checkbox)
-        liTag.appendChild(firstSpan)
-        liTag.appendChild(secondSpan)
-
-        firstSpan.textContent = inputValue;
-        secondSpan.textContent = "delete";
-        console.log(liTag)
-        // bookList.prepend(liTag)adds to the top
-        task_List.appendChild(liTag)
-        addTask.reset()
-    }
+    const searchValue = search.value;
+    if(searchValue){
+        getMovies(SEARCH_URL + "&query=" + searchValue);
+    }else{
+            getMovies(API_URL);
+        }
 })
